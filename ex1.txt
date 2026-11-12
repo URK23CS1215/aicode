@@ -1,4 +1,4 @@
-
+ex2:gan
 
 import ollama
 def generate_fun(d):
@@ -129,3 +129,282 @@ for code, label in zip(x, y):
     print("Confidence:", round(c, 2))
     print("Syntax Valid:", validate(code))
 
+
+
+ex4:complete gpt4
+
+# Step 1: Install and import libraries
+!pip install -q transformers gradio torch
+
+import torch
+import gradio as gr
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+# Step 2: Load GPT-2 model
+model_name = "gpt2"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+model.eval()
+
+print("GPT-2 loaded successfully!")
+
+
+# Step 3: Generate code completion
+
+def complete_code(prompt):
+
+    # Add Python instruction
+    prompt = "# Python code completion\n" + prompt
+
+    inputs = tokenizer(prompt, return_tensors="pt")
+
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=50,
+            do_sample=False,
+            repetition_penalty=1.2,
+            pad_token_id=tokenizer.eos_token_id
+        )
+
+    generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
+
+    result = tokenizer.decode(
+        generated_tokens,
+        skip_special_tokens=True
+    )
+
+    return result
+
+
+
+# Step 4: Create Gradio interface
+def code_completion_interface(code):
+
+    if not code.strip():
+        return "Please enter some Python code."
+
+    return complete_code(code)
+
+
+# Step 5: Display interface
+demo = gr.Interface(
+    fn=code_completion_interface,
+    inputs=gr.Textbox(
+        lines=10,
+        label="Enter your Python code"
+    ),
+    outputs=gr.Textbox(
+        lines=10,
+        label="AI Code Completion"
+    ),
+    title="Transformer-Based Code Completion",
+    description="Complete Python code using GPT-2."
+)
+
+demo.launch()
+
+
+ex5generate
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import unittest
+import re
+
+# Step 1: Load GPT-Neo
+model_name = "EleutherAI/gpt-neo-125M"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+print("GPT-Neo loaded successfully!")
+
+
+# Step 2: Pseudocode
+pseudo_code = """
+Write a function add_numbers that takes two numbers
+and returns their sum.
+"""
+
+
+# Step 3: Generate Python code
+def generate_code(pseudo_code):
+
+    prompt = """
+Task: Add two numbers.
+Python:
+def add_numbers(a, b):
+    return a + b
+
+Task: """ + pseudo_code + """
+
+Python:
+def add_numbers(a, b):
+    """
+
+    inputs = tokenizer(prompt, return_tensors="pt")
+
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=30,
+        do_sample=False,
+        pad_token_id=tokenizer.eos_token_id
+    )
+
+    generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
+
+    code = tokenizer.decode(
+        generated_tokens,
+        skip_special_tokens=True
+    )
+
+    return code
+
+
+# Step 4: Generate code
+generated_code = generate_code(pseudo_code)
+
+print("\nGenerated Code:")
+print(generated_code)
+
+
+# Step 5: Extract generated function
+match = re.search(r"return\s+[^\n]+", generated_code)
+
+if match:
+
+    code = "def add_numbers(a, b):\n    " + match.group(0).strip()
+
+    print("\nExtracted Function:")
+    print(code)
+
+    # Step 6: Execute generated code
+    namespace = {}
+
+    try:
+        exec(code, namespace)
+
+        add_numbers = namespace["add_numbers"]
+
+        print("\nGenerated function executed successfully!")
+
+        # Step 7: Unit Testing
+        class TestAddNumbers(unittest.TestCase):
+
+            def test_add_numbers(self):
+                self.assertEqual(add_numbers(2, 3), 5)
+                self.assertEqual(add_numbers(10, 20), 30)
+                self.assertEqual(add_numbers(-5, 5), 0)
+
+        # Step 8: Run test cases
+        print("\nRunning Unit Tests...\n")
+
+        result = unittest.TextTestRunner().run(
+            unittest.TestLoader().loadTestsFromTestCase(
+                TestAddNumbers
+            )
+        )
+
+        # Step 9: Final result
+        if result.wasSuccessful():
+            print("\nALL TESTS PASSED!")
+        else:
+            print("\nTESTS FAILED!")
+
+    except Exception as e:
+        print("\nGenerated code could not be executed.")
+        print("Error:", e)
+
+else:
+    print("\nRequired function was not generated.")
+
+
+ex6:
+
+import ast
+import subprocess
+import sys
+
+# 1. AI-generated code
+generated_code = """
+\"\"\"Program to perform addition of two numbers.\"\"\"
+
+def add_numbers(a: int, b: int) -> int:
+    \"\"\"Return the sum of two integers.\"\"\"
+    return a + b
+"""
+
+# 2. Test cases
+test_cases = [
+    ((2, 3), 5),
+    ((10, 20), 30),
+    ((-2, 2), 0),
+    ((0, 0), 0)
+]
+
+# 3. Syntax checking
+def syntax_check(code):
+    try:
+        ast.parse(code)
+        print("Syntax Check: Passed")
+        return True
+    except SyntaxError:
+        print("Syntax Check: Failed")
+        return False
+
+# 4. Pylint checking
+def pylint_check():
+    print("\nPylint Analysis:")
+    result = subprocess.run(
+        [sys.executable, "-m", "pylint", "--score=y", "generated_code.py"],
+        capture_output=True,
+        text=True
+    )
+    print(result.stdout)
+    print(result.stderr)
+
+# 5. Mypy checking
+def mypy_check():
+    print("\nMypy Type Checking:")
+    result = subprocess.run(
+        [sys.executable, "-m", "mypy", "generated_code.py"],
+        capture_output=True,
+        text=True
+    )
+    print(result.stdout)
+    print(result.stderr)
+
+# 6. Dynamic testing
+def test_code(code):
+    namespace = {}
+    exec(code, namespace)
+
+    function = namespace["add_numbers"]
+
+    print("\nTest Case Results:")
+    for inputs, expected in test_cases:
+        output = function(*inputs)
+
+        if output == expected:
+            print("PASS:", inputs)
+        else:
+            print("FAIL:", inputs, "Expected:", expected,
+                  "Got:", output)
+
+# Main program
+print("AI CODE QUALITY EVALUATION")
+
+if syntax_check(generated_code):
+
+    # Save code into a Python file
+    with open("generated_code.py", "w") as file:
+        file.write(generated_code)
+
+    pylint_check()
+    mypy_check()
+    test_code(generated_code)
+
+else:
+    print("Fix syntax errors before further evaluation.")
